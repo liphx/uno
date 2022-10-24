@@ -319,7 +319,7 @@ public:
 
 public:
     struct Rule {
-        Rule(int players_num = 4, bool enable_70 = false) : players_num(players_num), enable_70(enable_70) {
+        Rule(int players_num = 4, bool enable_70 = true) : players_num(players_num), enable_70(enable_70) {
             players_num = std::max(MinPlayersNums, players_num);
             players_num = std::min(MaxPlayersNums, players_num);
         }
@@ -388,11 +388,6 @@ public:
 
                 discards_heap_.emplace_back(card);
                 action(player);
-            }
-            if (cards_heap_.empty()) {
-                assert(!discards_heap_.empty());
-                cards_heap_.swap(discards_heap_);
-                random_sort(cards_heap_.data(), cards_heap_.size());
             }
         }
     }
@@ -522,7 +517,11 @@ private:
     }
 
     void player_fetch_one(std::shared_ptr<Player> player) {
-        assert(!cards_heap_.empty());
+        if (cards_heap_.empty()) {
+            assert(!discards_heap_.empty());
+            cards_heap_.swap(discards_heap_);
+            random_sort(cards_heap_.data(), cards_heap_.size());
+        }
         player->fetch_one_card(cards_heap_.back().release());
         cards_heap_.pop_back();
     }
